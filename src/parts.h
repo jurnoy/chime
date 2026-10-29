@@ -4,8 +4,8 @@
 typedef struct {
   Vector2 pos;
   Vector2 size;
-  Color BackColor;
-  Color fontColor;
+  Color *BackColor;
+  Color *fontColor;
   const char* text;
   const char* caption;
   void (*callback) (void);

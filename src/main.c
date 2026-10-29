@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include "raylib.h"
 #include "screens.h"
+#include "loader.h"
 #include "confs.h"
 
 int WIDTH = 840;
@@ -17,12 +19,13 @@ Font font2 = { 0 };
 // ------------------------------------------
 Font font = { 0 };
 
-const Color FONT_COLOR = { 0xe8, 0xe6, 0xe3, 0xff };
-const Color WRONG_COLOR = { 0x5d, 0x64, 0x68, 0xff };
-const Color BACKROUND_COLOR = { 0x18, 0x1a, 0x1b, 0xff };
-const Color MISPLACED_COLOR = { 0x68, 0x5b, 0x22, 0xff };
-const Color CORRECT_COLOR = { 0x57, 0x7e, 0x45, 0xff };
-const Color OUTLINE_COLOR = { 0x3b, 0x40, 0x43, 0xff };
+Color FONT_COLOR = { 0xe8, 0xe6, 0xe3, 0xff };
+Color WRONG_COLOR = { 0x5d, 0x64, 0x68, 0xff };
+Color BACKROUND_COLOR = { 0x18, 0x1a, 0x1b, 0xff };
+Color MISPLACED_COLOR = { 0x68, 0x5b, 0x22, 0xff };
+Color CORRECT_COLOR = { 0x57, 0x7e, 0x45, 0xff };
+Color OUTLINE_COLOR = { 0x3b, 0x40, 0x43, 0xff };
+Color BUTTON_COLOR = { 0xe6, 0x29, 0x37, 0xff };
 
 // ------------------------------------------
 
@@ -40,11 +43,15 @@ int main(void) {
   // ------------------------------------------
 
 
-  // Loading Fonts
+  // Loading Fonts and Colors
   // ------------------------------------------
   font = LoadFontEx("assets/Raleway-Regular.ttf", 140 * 0.4, 0, 0);
   font2 = LoadFontEx("assets/Ubuntu-Regular.ttf", 55, 0, 0);
 
+  
+  FILE *colorfp = fopen("colors.txt", "r");
+  load_colors(colorfp);
+  fclose(colorfp);
   // ------------------------------------------
 
 

@@ -1,5 +1,9 @@
 #include "stdio.h"
 #include "stdint.h"
+#include "stdlib.h"
+#include "string.h"
+#include "raylib.h"
+#include "confs.h"
 #include "loader.h"
 #include "game_state.h"
 
@@ -11,7 +15,7 @@ void loadWordleWord(const char* fpname, long seed) {
   for (int i = 0; i < 5; i++) {
     correct[i] = word[i];
   }
-  
+
   if (fp == NULL) {
       perror("Unable to open file");
       return;
@@ -32,7 +36,7 @@ void loadWordleWord(const char* fpname, long seed) {
   }
 
   int target = xoshiroCielInt(seed, fp_size / 6.0);
-  
+
   fseek(fp, (target - 1) * 6, SEEK_SET);
   fgets(word, 6, fp);
 
@@ -42,4 +46,23 @@ void loadWordleWord(const char* fpname, long seed) {
     }
     else correct[i] = word[i];
   }
+}
+
+int load_colors(FILE *file) {
+    char buf[50];
+    char *type;
+    long int val;
+
+    while (fgets(buf, sizeof buf, file) != NULL) {
+        type = strtok(buf, " = ");
+        val = strtol(strtok(NULL, " = "), NULL, 16);
+        if (strcmp(type, "BACKGROUND") == 0) BACKROUND_COLOR = GetColor(val);
+        else if (strcmp(type, "CORRECT") == 0) CORRECT_COLOR = GetColor(val);
+        else if (strcmp(type, "MISPLACED") == 0) MISPLACED_COLOR = GetColor(val);
+        else if (strcmp(type, "WRONG") == 0) WRONG_COLOR = GetColor(val);
+        else if (strcmp(type, "FONT") == 0) FONT_COLOR = GetColor(val);
+        else if (strcmp(type, "OUTLINE") == 0) OUTLINE_COLOR = GetColor(val);
+        else if (strcmp(type, "BUTTON") == 0) BUTTON_COLOR = GetColor(val);
+    }
+    return 0;
 }

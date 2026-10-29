@@ -35,7 +35,7 @@ int turn;
 typedef struct {
   Vector2 pos;
   char letter;
-  Color color;
+  Color *color;
   int outline;
 } Box;
 
@@ -43,7 +43,7 @@ void DrawBox(Box box);
 Box Boxes[30];
 
 // Doing buttons
-int total_buttons = 1;
+int total_buttons = 2;
 Button Buttons[2];
 
 // Abort button
@@ -61,22 +61,22 @@ void CheckUpdateBox(char intext[5]);
 void InitGameScreen(void) {
   createAbortButton(&Buttons[0]);
   createBackButton(&Buttons[1]);
-  
+
   // Setting the correct word
   long seed = timeSeed();
   loadWordleWord("assets/words.txt", seed);
-   
+
   end = PLAYING;
   textIndex = 0;
   turn = 0;
   for (int i = 0; i < 5; i++) {
     text[i] = 0;
   }
-  
+
   for (int y = 0; y < 6 ;y++) {
     for (int x = 0; x < 5 ;x++) {
       Vector2 pos = { BOX_SIZE.x * x, BOX_SIZE.y * y};
-      Box tmpBox = { pos, 0, OUTLINE_COLOR, 1 };
+      Box tmpBox = { pos, 0, &OUTLINE_COLOR, 1 };
       Boxes[y * 5 + x] = tmpBox;
     }
   }
@@ -86,6 +86,11 @@ void checkShortcuts(void) {
   if (IsKeyPressed(KEY_DELETE)) {
     currentScreen = TITLE;
   }
+  if (IsKeyPressed(KEY_EIGHT)) {
+    FILE *colorfp = fopen("colors.txt", "r");
+    load_colors(colorfp);
+    fclose(colorfp);
+  }
 }
 
 void DrawGameScreen(void) {
@@ -93,7 +98,7 @@ void DrawGameScreen(void) {
   for (int i = 0; i < 30 ; i++) {
     DrawBox(Boxes[i]);
   }
-  for (int i = total_buttons; i >= 0; i--) {
+  for (int i = total_buttons - 1; i >= 0; i--) {
     DrawSimpleButton(Buttons[i]);
     checkClick(Buttons[i]);
   }
@@ -112,7 +117,7 @@ void UpdateGameScreen(void) {
     currentScreen = ENDING;
     InitEndingScreen();
   };
-  
+
   if (text[4] == 0){
     int c = GetCharPressed();
     if (c != 0) {
@@ -148,7 +153,7 @@ void UpdateGameScreen(void) {
 
 void DrawBox(Box box) {
   DrawRectangleV(box.pos, BOX_SIZE, BACKROUND_COLOR);
-  DrawRectangleV(Vector2Add(box.pos, Vector2Scale(BOX_SIZE, .05)), Vector2Scale(BOX_SIZE, 0.90), box.color);
+  DrawRectangleV(Vector2Add(box.pos, Vector2Scale(BOX_SIZE, .05)), Vector2Scale(BOX_SIZE, 0.90), *box.color);
   if (box.outline == 1) {
     DrawRectangleV(Vector2Add(box.pos, Vector2Scale(BOX_SIZE, 0.1)), Vector2Scale(BOX_SIZE, 0.80), BACKROUND_COLOR);
   }
@@ -165,8 +170,8 @@ void abortGame(void) {
 }
 
 void createAbortButton(Button *b) {
-  b->BackColor = BACKROUND_COLOR;
-  b->fontColor = RED;
+  b->BackColor = &BACKROUND_COLOR;
+  b->fontColor = &BUTTON_COLOR;
   b->text = "<|";
   b->caption = "Abort";
   Vector2 b_pos = {GetScreenWidth() - BOX_SIZE.x, 0};
@@ -182,8 +187,8 @@ void backToTitle(void) {
 };
 
 void createBackButton(Button *b) {
-  b->BackColor = BACKROUND_COLOR;
-  b->fontColor = RED;
+  b->BackColor = &BACKROUND_COLOR;
+  b->fontColor = &BUTTON_COLOR;
   b->text = "<<";
   b->caption = "Back";
   Vector2 b_pos = {GetScreenWidth() - BOX_SIZE.x, BOX_SIZE.y};
@@ -192,19 +197,18 @@ void createBackButton(Button *b) {
   b->callback = backToTitle;
 };
 
-
 void CheckUpdateBox(char intext[5]) {
   uint8_t cmask = 0;
   END should_end = WIN;
-  
+
   for (int i = 0; i < 5; i++) {
     if (intext[i] == correct[i]) {
-      Boxes[turn * 5 + i].color = CORRECT_COLOR;
+      Boxes[turn * 5 + i].color = &CORRECT_COLOR;
       Boxes[turn * 5 + i].outline = 0;
       cmask |= 1 << i;
     }
     else {
-      Boxes[turn * 5 + i].color = WRONG_COLOR;
+      Boxes[turn * 5 + i].color = &WRONG_COLOR;
       should_end = PLAYING;
     };
   }
@@ -217,7 +221,7 @@ void CheckUpdateBox(char intext[5]) {
       // Checking if the letter is already used to mark
       if ((cmask & (1 << n)) == 0 && (Boxes[turn * 5 + i].outline != 0)) {
         if (intext[i] == correct[n]) {
-          Boxes[turn * 5 + i].color = MISPLACED_COLOR;
+          Boxes[turn * 5 + i].color = &MISPLACED_COLOR;
           cmask |= 1 << n;
           continue;
         }
